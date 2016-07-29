@@ -75,17 +75,21 @@ public class HashMapConcurrentInfinityLoopTest {
             }
         }
         es.shutdownNow();
+        es.awaitTermination(2, TimeUnit.SECONDS);
+        Exception ex = new Exception();
         for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
             Thread thread = entry.getKey();
             StackTraceElement[] value = entry.getValue();
             if (thread.getThreadGroup() == group) {
-                Exception ex = new Exception();
                 ex.setStackTrace(value);
                 group.uncaughtException(thread, ex);
             }
         }
         if (!es.awaitTermination(10, TimeUnit.SECONDS)) {
             group.stop();
+        }
+        if (!es.awaitTermination(60, TimeUnit.SECONDS)) {
+            System.exit(1);
         }
     }
 
